@@ -1,50 +1,44 @@
-# Spring Boot BlackJack API
+# Spring Boot BlackJack 🃏
 
-Backendowa aplikacja typu REST API umożliwiająca grę w Blackjacka, zbudowana przy użyciu frameworka Spring Boot. Projekt zarządza stanem graczy oraz trwającymi grami w pamięci operacyjnej (In-Memory).
+Aplikacja typu REST API realizująca logikę popularnej gry karcianej BlackJack (Oczko), zbudowana w oparciu o framework Spring Boot.
 
 ## 🚀 Technologie
-* **Java**: 25
-* **Framework**: Spring Boot 4.0.6
-* **Budowanie projektu**: Maven (z wykorzystaniem Maven Wrapper)
-* **Zależności**: Spring Web MVC
+* Java (Spring Boot)
+* Maven
 
-## 🎮 Mechanika Gry
-Logika gry została zaimplementowana w serwisach i modelach domeny:
-* **Punktacja**: Karty od 2 do 10 mają wartość nominalną, figury (Walet, Dama, Król) są warte 10 punktów, a As jest wart 11 punktów, chyba że suma przekracza 21 – wtedy jego wartość zmienia się na 1 punkt.
-* **Gracz**: Rozpoczyna z saldem 1000.00. Może stawiać zakłady, dobierać karty (Hit) lub pasować (Stand).
-* **Krupier (Dealer)**: Dobiera karty automatycznie do momentu osiągnięcia minimum 17 punktów.
-* **Wygrane**: Wygrana gracza wypłaca mnożnik 2.00. W przypadku remisu (TIE), zakład jest zwracany.
+## ✨ Funkcjonalności (Zasady Gry)
+Gra wspiera standardowe akcje gracza przy stole do Blackjacka:
+* **Hit (Dobierz)** - Gracz dobiera kolejną kartę.
+* **Stand (Czekaj)** - Gracz zatrzymuje swój obecny układ kart, a swoją turę rozpoczyna krupier (Dealer).
+* **Double (Podwojenie)** - Gracz podwaja swoją stawkę początkową, dobiera **dokładnie jedną** dodatkową kartę, po czym jego tura automatycznie się kończy (przechodzi w stan Stand).
+* **Rozstrzygnięcie gry** - Automatyczne porównanie wartości kart gracza i krupiera po zakończeniu tur obu stron, z uwzględnieniem "Blackjacka" (21 punktów z dwóch pierwszych kart) oraz "Bust" (przekroczenie 21 punktów).
 
-## 📡 Dokumentacja API
+## 🗂️ Struktura Projektu
+Projekt wykorzystuje architekturę wielowarstwową:
+* `controller` - Endpointy REST obsługujące akcje gracza (`PlayerController`) i stan gry (`GameController`).
+* `service` - Główna logika biznesowa gry (`GameService`, `PlayerService`).
+* `model` - Reprezentacja obiektów domenowych (`Card`, `Deck`, `Player`, `Dealer`, `Game`, `GameStatus` itd.).
+* `dto` - Obiekty transferu danych (m.in. `GameResponseRecord`, `ErrorResponseRecord`).
+* `exception` - Globalna obsługa błędów (`GlobalExceptionHandler`).
 
-### Zarządzanie Graczem (`PlayerController`)
-* **`POST /api/players`**: Tworzy nowego gracza z unikalnym identyfikatorem i początkowym saldem.
-* **`GET /api/players/{playerId}`**: Pobiera informacje o aktywnej rozgrywce, w której aktualnie bierze udział dany gracz.
-* **`DELETE /api/players/{playerId}`**: Usuwa gracza oraz kończy jego aktywne sesje gier.
+## 🌐 Endpointy API (REST)
 
-### Rozgrywka (`GameController`)
-* **`POST /api/games/start`**: Rozpoczyna nową partię. 
-    * Wymagane parametry: `playerId`, `betAmount`.
-* **`GET /api/games/{gameId}`**: Pobiera aktualny stan wskazanej gry (widoczne karty, status gry, etc.).
-* **`POST /api/games/{gameId}/hit`**: Gracz dobiera kolejną kartę. Jeśli suma przekroczy 21, następuje automatyczna przegrana.
-* **`POST /api/games/{gameId}/stand`**: Gracz kończy ruch. Krupier dobiera karty, a system rozstrzyga wynik gry.
+Poniżej znajduje się lista dostępnych endpointów aplikacji:
 
-### ⚠️ Obsługa błędów
-Aplikacja posiada globalną obsługę wyjątków (`GlobalExceptionHandler`). W przypadku błędnych żądań lub niedozwolonych akcji (np. próba ruchu w zakończonej grze, brak wystarczających środków, nieznalezienie gracza), API zwraca ustandaryzowany obiekt błędu (`ErrorResponseRecord`), zawierający precyzyjne szczegóły problemu oraz odpowiedni status HTTP.
+### 🎮 Gra (`GameController`)
+* `POST /api/game/start` - Rozpoczyna nową grę, przydziela początkowe karty dla gracza i krupiera.
+* `GET /api/game/{gameId}` - Pobiera aktualny stan wybranej gry.
+* `POST /api/game/{gameId}/hit` - Gracz podejmuje akcję "Hit" (dobiera kartę).
+* `POST /api/game/{gameId}/stand` - Gracz podejmuje akcję "Stand" (kończy dobieranie kart, tura przechodzi na krupiera).
+* `POST /api/game/{gameId}/double` - Gracz podejmuje akcję "Double" (dobiera ostatnią kartę i kończy turę).
 
-## 🏗️ Struktura Projektu
-* **`model/`**: Zawiera definicje kart, talii (`Deck`), osób (`Player`, `Dealer`) oraz logikę zliczania punktów.
-* **`service/`**: Obsługuje logikę biznesową – `GameService` zarządza przebiegiem partii, a `PlayerService` portfelem gracza.
-* **`controller/`**: Definiuje endpointy REST obsługujące żądania HTTP.
-* **`exception/`**: Zawiera klasy odpowiedzialne za globalne przechwytywanie i formatowanie błędów w aplikacji.
-* **`dto/`**: Obiekty transferu danych: `GameResponceRecord` (maskuje m.in. ukrytą kartę krupiera) oraz `ErrorResponseRecord` (struktura zwracanego błędu).
+### 👤 Gracz (`PlayerController`)
+* `POST /api/players` - Tworzy nowego profilu gracza w systemie.
+* `GET /api/players/{playerId}` - Pobiera informacje o danym graczu (np. jego statystyki lub balans konta).
 
-## 🛠️ Uruchomienie
-Aby uruchomić aplikację, skorzystaj z dołączonego wrappera Maven:
 
-```bash
-# Systemy Linux/macOS
-./mvnw spring-boot:run
+## 🛠️ Uruchomienie lokalne
 
-# System Windows
-mvnw.cmd spring-boot:run
+1. Sklonuj repozytorium:
+   ```bash
+   git clone <link-do-repo>
