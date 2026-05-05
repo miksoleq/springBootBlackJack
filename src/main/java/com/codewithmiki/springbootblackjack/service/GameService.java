@@ -16,6 +16,7 @@ public class GameService {
     public GameService(PlayerService playerService) {
         this.playerService = playerService;
     }
+
     public Game startNewGame(String playerId, BigDecimal betAmount) {
         var player = playerService.getPlayer(playerId);
         if(playerGame.containsKey(playerId))
@@ -96,6 +97,30 @@ public class GameService {
         playerGame.remove(game.getPlayer().getId());
         return game;
     }
+    public Game doubleDown(String gameId){
+        var game = activeGames.get(gameId);
+        if(game == null)
+            throw new IllegalArgumentException("Game with id " + gameId + " not found");
+        if(game.getStatus() != GameStatus.IN_PROGRESS)
+            throw new IllegalArgumentException("Game with id " + gameId + " is not in progress");
+        if(game.getPlayer().getHand().size() > 2)
+            throw new IllegalArgumentException("Cannot double in game:" + gameId +". You already took a hit" );
+        if(game.getPlayer().getMoney().compareTo(game.getPlayer().getCurrentBet()) < 0)
+            throw new IllegalArgumentException("Cannot double in game:" + gameId +". Not enough money");
+
+
+        game.getPlayer().placeBet(game.getPlayer().getCurrentBet());
+        game.getPlayer().addCard(game.getDeck().drawCard());
+        if(game.getPlayer().count() > 21) {
+            game.setStatus(GameStatus.DEALER_WON);
+            activeGames.remove(gameId);
+            playerGame.remove(game.getPlayer().getId());
+            return game;
+        }
+        return stand(gameId);
+    }
+
+
 
     public Map<String, Game> getActiveGames() {
         return activeGames;

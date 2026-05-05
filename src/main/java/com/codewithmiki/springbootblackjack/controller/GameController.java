@@ -34,5 +34,11 @@ public class GameController {
         return new GameResponceRecord(game);
     }
 
+    @PostMapping("/{gameId}/double")
+    public GameResponceRecord doubleGame(@PathVariable String gameId){
+        var game = gameService.doubleDown(gameId);
+        return new GameResponceRecord(game);
+    }
+
 
 }

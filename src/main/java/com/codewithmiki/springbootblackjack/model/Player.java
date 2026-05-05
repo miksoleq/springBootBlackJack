@@ -31,7 +31,7 @@ public class Player extends Person {
             throw new IllegalArgumentException("Zakład musi być większy niż 0!");
         }
         this.money = this.money.subtract(betAmount);
-        this.currentBet = betAmount;
+        this.currentBet = this.currentBet.add(betAmount);
     }
 
     public void winBet(BigDecimal multiplier) {
