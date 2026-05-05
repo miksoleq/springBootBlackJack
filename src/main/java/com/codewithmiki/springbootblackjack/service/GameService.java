@@ -12,11 +12,14 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameService {
     private final Map<String, Game> activeGames = new ConcurrentHashMap<>();
     private final PlayerService playerService;
+    private final Map<String, String> playerGame =  new ConcurrentHashMap<>();
     public GameService(PlayerService playerService) {
         this.playerService = playerService;
     }
     public Game startNewGame(String playerId, BigDecimal betAmount) {
         var player = playerService.getPlayer(playerId);
+        if(playerGame.containsKey(playerId))
+            throw new IllegalArgumentException("Player with id " + playerId + " is already in an active game.");
 
         var game = new Game(player);
         player.placeBet(betAmount);
@@ -27,7 +30,27 @@ public class GameService {
             game.getPlayer().addCard(game.getDeck().drawCard());
             game.getDealer().addCard(game.getDeck().drawCard());
         }
+        var playerScore = game.getPlayer().getScore();
+        var dealerScore = game.getDealer().getScore();
+        if(playerScore == 21) {
+            if(dealerScore == 21) {
+                game.setStatus(GameStatus.TIE);
+                game.getPlayer().returnBet();
+            }
+            else {
+                game.setStatus(GameStatus.PLAYER_WON);
+                game.getPlayer().winBet(new BigDecimal("2.50"));
+            }
+            return game;
+        }
+        if(dealerScore == 21) {
+            game.setStatus(GameStatus.DEALER_WON);
+            return game;
+        }
+
+
         activeGames.put(game.getId(), game);
+        playerGame.put(playerId, game.getId());
         return game;
     }
 
@@ -43,6 +66,7 @@ public class GameService {
         if(game.getPlayer().count() > 21) {
             game.setStatus(GameStatus.DEALER_WON);
             activeGames.remove(gameId);
+            playerGame.remove(game.getPlayer().getId());
         }
 
         return game;
@@ -69,10 +93,24 @@ public class GameService {
             game.getPlayer().returnBet();
         }
         activeGames.remove(gameId);
+        playerGame.remove(game.getPlayer().getId());
         return game;
     }
 
     public Map<String, Game> getActiveGames() {
         return activeGames;
     }
+
+    public Map<String, String> getPlayerGame() {
+        return playerGame;
+    }
+
+    public Game getGameForPlayer(String playerId) {
+        if(!playerService.getPlayers().containsKey(playerId))
+            throw new IllegalArgumentException("Player with id " + playerId + " not found");
+        if(!playerGame.containsKey(playerId))
+            throw new IllegalArgumentException("Player with id: "+ playerId + " is not in an active game");
+        return activeGames.get(playerGame.get(playerId));
+    }
+
 }

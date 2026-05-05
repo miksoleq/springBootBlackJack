@@ -8,6 +8,8 @@ public class Player extends Person {
     BigDecimal money;
     BigDecimal currentBet;
     String id;
+
+
     public Player() {
         this.money = new BigDecimal("1000.00");
         this.currentBet = new BigDecimal("0.00");
