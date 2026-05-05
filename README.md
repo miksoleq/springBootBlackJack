@@ -35,10 +35,3 @@ Poniżej znajduje się lista dostępnych endpointów aplikacji:
 ### 👤 Gracz (`PlayerController`)
 * `POST /api/players` - Tworzy nowego profilu gracza w systemie.
 * `GET /api/players/{playerId}` - Pobiera informacje o danym graczu (np. jego statystyki lub balans konta).
-
-
-## 🛠️ Uruchomienie lokalne
-
-1. Sklonuj repozytorium:
-   ```bash
-   git clone <link-do-repo>
