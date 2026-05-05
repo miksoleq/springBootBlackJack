@@ -19,18 +19,25 @@ Logika gry została zaimplementowana w serwisach i modelach domeny:
 
 ### Zarządzanie Graczem (`PlayerController`)
 * **`POST /api/players`**: Tworzy nowego gracza z unikalnym identyfikatorem i początkowym saldem.
+* **`GET /api/players/{playerId}`**: Pobiera informacje o aktywnej rozgrywce, w której aktualnie bierze udział dany gracz.
 * **`DELETE /api/players/{playerId}`**: Usuwa gracza oraz kończy jego aktywne sesje gier.
 
 ### Rozgrywka (`GameController`)
 * **`POST /api/games/start`**: Rozpoczyna nową partię. 
     * Wymagane parametry: `playerId`, `betAmount`.
+* **`GET /api/games/{gameId}`**: Pobiera aktualny stan wskazanej gry (widoczne karty, status gry, etc.).
 * **`POST /api/games/{gameId}/hit`**: Gracz dobiera kolejną kartę. Jeśli suma przekroczy 21, następuje automatyczna przegrana.
 * **`POST /api/games/{gameId}/stand`**: Gracz kończy ruch. Krupier dobiera karty, a system rozstrzyga wynik gry.
+
+### ⚠️ Obsługa błędów
+Aplikacja posiada globalną obsługę wyjątków (`GlobalExceptionHandler`). W przypadku błędnych żądań lub niedozwolonych akcji (np. próba ruchu w zakończonej grze, brak wystarczających środków, nieznalezienie gracza), API zwraca ustandaryzowany obiekt błędu (`ErrorResponseRecord`), zawierający precyzyjne szczegóły problemu oraz odpowiedni status HTTP.
 
 ## 🏗️ Struktura Projektu
 * **`model/`**: Zawiera definicje kart, talii (`Deck`), osób (`Player`, `Dealer`) oraz logikę zliczania punktów.
 * **`service/`**: Obsługuje logikę biznesową – `GameService` zarządza przebiegiem partii, a `PlayerService` portfelem gracza.
-* **`dto/`**: Zawiera `GameResponceRecord`, który maskuje ukrytą kartę krupiera podczas trwania gry.
+* **`controller/`**: Definiuje endpointy REST obsługujące żądania HTTP.
+* **`exception/`**: Zawiera klasy odpowiedzialne za globalne przechwytywanie i formatowanie błędów w aplikacji.
+* **`dto/`**: Obiekty transferu danych: `GameResponceRecord` (maskuje m.in. ukrytą kartę krupiera) oraz `ErrorResponseRecord` (struktura zwracanego błędu).
 
 ## 🛠️ Uruchomienie
 Aby uruchomić aplikację, skorzystaj z dołączonego wrappera Maven:
