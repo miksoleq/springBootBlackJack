@@ -1,5 +1,6 @@
 package com.codewithmiki.springbootblackjack.model;
 
+import com.codewithmiki.springbootblackjack.model.deckStrategies.DeckGenerationStrategy;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.UUID;
@@ -12,9 +13,9 @@ public class Game {
     private final Dealer dealer;
     private GameStatus status;
 
-    public Game(Player player){
+    public Game(Player player, DeckGenerationStrategy deckGenerationStrategy) {
         this.id = UUID.randomUUID().toString();
-        this.deck = new Deck();
+        this.deck = new Deck(deckGenerationStrategy);
         this.player = player;
         this.dealer = new Dealer();
         this.status = GameStatus.IN_PROGRESS;

@@ -2,6 +2,7 @@ package com.codewithmiki.springbootblackjack.service;
 
 import com.codewithmiki.springbootblackjack.model.Game;
 import com.codewithmiki.springbootblackjack.model.GameStatus;
+import com.codewithmiki.springbootblackjack.model.deckStrategies.DeckGenerationStrategy;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
@@ -13,8 +14,11 @@ public class GameService {
     private final Map<String, Game> activeGames = new ConcurrentHashMap<>();
     private final PlayerService playerService;
     private final Map<String, String> playerGame =  new ConcurrentHashMap<>();
-    public GameService(PlayerService playerService) {
+    private final DeckGenerationStrategy deckGenerationStrategy;
+
+    public GameService(PlayerService playerService, DeckGenerationStrategy deckGenerationStrategy) {
         this.playerService = playerService;
+        this.deckGenerationStrategy = deckGenerationStrategy;
     }
 
     public Game startNewGame(String playerId, BigDecimal betAmount) {
@@ -22,10 +26,8 @@ public class GameService {
         if(playerGame.containsKey(playerId))
             throw new IllegalArgumentException("Player with id " + playerId + " is already in an active game.");
 
-        var game = new Game(player);
+        var game = new Game(player, deckGenerationStrategy);
         player.placeBet(betAmount);
-
-        game.getDeck().shuffle();
 
         for(var i = 0; i < 2; i++) {
             game.getPlayer().addCard(game.getDeck().drawCard());
@@ -37,15 +39,18 @@ public class GameService {
             if(dealerScore == 21) {
                 game.setStatus(GameStatus.TIE);
                 game.getPlayer().returnBet();
+                game.getPlayer().setCurrentBet(BigDecimal.ZERO);
             }
             else {
                 game.setStatus(GameStatus.PLAYER_WON);
                 game.getPlayer().winBet(new BigDecimal("2.50"));
+                game.getPlayer().setCurrentBet(BigDecimal.ZERO);
             }
             return game;
         }
         if(dealerScore == 21) {
             game.setStatus(GameStatus.DEALER_WON);
+            game.getPlayer().setCurrentBet(BigDecimal.ZERO);
             return game;
         }
 
@@ -59,6 +64,7 @@ public class GameService {
         var game = activeGames.get(gameId);
         if(game == null)
             throw new IllegalArgumentException("Game with id " + gameId + " not found");
+        synchronized (game) {
         if(game.getStatus() != GameStatus.IN_PROGRESS)
             throw new IllegalArgumentException("Game with id " + gameId + " is not in progress");
 
@@ -68,9 +74,11 @@ public class GameService {
             game.setStatus(GameStatus.DEALER_WON);
             activeGames.remove(gameId);
             playerGame.remove(game.getPlayer().getId());
+            game.getPlayer().setCurrentBet(BigDecimal.ZERO);
         }
 
         return game;
+        }
     }
 
     public Game stand(String gameId){
@@ -93,6 +101,7 @@ public class GameService {
             game.setStatus(GameStatus.TIE);
             game.getPlayer().returnBet();
         }
+        game.getPlayer().setCurrentBet(BigDecimal.ZERO);
         activeGames.remove(gameId);
         playerGame.remove(game.getPlayer().getId());
         return game;
@@ -115,6 +124,7 @@ public class GameService {
             game.setStatus(GameStatus.DEALER_WON);
             activeGames.remove(gameId);
             playerGame.remove(game.getPlayer().getId());
+            game.getPlayer().setCurrentBet(BigDecimal.ZERO);
             return game;
         }
         return stand(gameId);

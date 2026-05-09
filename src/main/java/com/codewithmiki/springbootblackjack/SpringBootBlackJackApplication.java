@@ -6,8 +6,5 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @SpringBootApplication
 public class SpringBootBlackJackApplication {
 
-    public static void main(String[] args) {
-        SpringApplication.run(SpringBootBlackJackApplication.class, args);
-    }
-
+    public static void main(String[] args) {SpringApplication.run(SpringBootBlackJackApplication.class, args);}
 }

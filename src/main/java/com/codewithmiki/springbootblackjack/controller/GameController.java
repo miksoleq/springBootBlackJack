@@ -1,7 +1,6 @@
 package com.codewithmiki.springbootblackjack.controller;
 
 import com.codewithmiki.springbootblackjack.dto.GameResponceRecord;
-import com.codewithmiki.springbootblackjack.model.Game;
 import com.codewithmiki.springbootblackjack.service.GameService;
 import org.springframework.web.bind.annotation.*;
 
