@@ -33,5 +33,5 @@ Poniżej znajduje się lista dostępnych endpointów aplikacji:
 * `POST /api/game/{gameId}/double` - Gracz podejmuje akcję "Double" (dobiera ostatnią kartę i kończy turę).
 
 ### 👤 Gracz (`PlayerController`)
-* `POST /api/players` - Tworzy nowego profilu gracza w systemie.
+* `POST /api/players` - Tworzenie nowego profilu gracza w systemie.
 * `GET /api/players/{playerId}` - Pobiera informacje o danym graczu (np. jego statystyki lub balans konta).
